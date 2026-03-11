@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <title>Historie změn — Whiteboard</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --border: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      margin: 0;
+      padding: 16px;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .header { margin-bottom: 20px; }
+    .header h1 { margin: 0 0 8px 0; font-size: 1.35rem; }
+    .header a { color: var(--accent); text-decoration: none; font-size: 0.9rem; }
+    .header a:hover { text-decoration: underline; }
+    .event-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+    .event-card .ts-main { color: var(--accent); font-weight: 600; font-size: 0.95rem; margin-bottom: 12px; }
+    .event-card .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .event-card .col h4 { margin: 0 0 6px 0; font-size: 0.85rem; color: var(--muted); font-weight: 500; }
+    .event-card .col img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      display: block;
+    }
+    .event-card .col .ts { font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
+    .event-card .link { margin-top: 10px; font-size: 0.8rem; }
+    .event-card .link a { color: var(--accent); }
+    .empty { color: var(--muted); padding: 40px; text-align: center; }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 12px;
+        padding-left: max(12px, env(safe-area-inset-left));
+        padding-right: max(12px, env(safe-area-inset-right));
+      }
+      .event-card .row { grid-template-columns: 1fr; }
+      .event-card .ts-main { font-size: 0.9rem; }
+    }
+
+    @media (min-width: 769px) {
+      body { max-width: 900px; margin: 0 auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Historie změn</h1>
+    <a href="/">← Zpět na přehled</a>
+  </div>
+
+  {% for item in event_items %}
+  <div class="event-card">
+    <div class="ts-main">{{ item.ev.ts|format_ts }}</div>
+    <div class="row">
+      <div class="col">
+        <h4>Před změnou</h4>
+        {% if item.before_rel %}
+        <a href="/file/{{ item.before_rel }}/{{ item.before_file }}"><img src="/file/{{ item.before_rel }}/{{ item.before_file }}" loading="lazy" alt="před změnou"></a>
+        <div class="ts">{% if item.before_ts %}{{ item.before_ts|format_ts }}{% else %}—{% endif %}</div>
+        {% else %}
+        <p class="ts">—</p>
+        {% endif %}
+      </div>
+      <div class="col">
+        <h4>Po změně</h4>
+        <a href="/file/{{ item.ev.rel }}/frame.jpg"><img src="/file/{{ item.ev.rel }}/frame.jpg" loading="lazy" alt="po změně"></a>
+        <div class="ts">{{ item.ev.ts|format_ts }}</div>
+      </div>
+    </div>
+    <div class="link"><a href="/last_diff?e={{ item.ev.rel|urlencode }}">Odkaz na detail</a></div>
+  </div>
+  {% else %}
+  <p class="empty">Zatím žádné eventy.</p>
+  {% endfor %}
+</body>
+</html>

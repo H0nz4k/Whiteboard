@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <title>Poslední změna — Whiteboard</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --border: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .header { margin-bottom: 24px; }
+    .header h1 { margin: 0 0 8px 0; font-size: 1.5rem; }
+    .header .ts { color: var(--accent); font-size: 1.1rem; font-weight: 600; }
+    .header .back { margin-top: 12px; }
+    .header a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.95rem;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .header a:hover { text-decoration: underline; }
+    .row { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      flex: 1;
+      min-width: 280px;
+    }
+    .card h3 { margin: 0 0 12px 0; font-size: 1rem; color: var(--muted); }
+    .card .ts { color: var(--accent); font-size: 0.9rem; font-weight: 500; margin-top: 10px; }
+    .card img {
+      max-width: 100%;
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      display: block;
+    }
+    .empty { color: var(--muted); padding: 40px; text-align: center; }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 12px;
+        padding-left: max(12px, env(safe-area-inset-left));
+        padding-right: max(12px, env(safe-area-inset-right));
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+      }
+      .header { margin-bottom: 16px; }
+      .header h1 { font-size: 1.25rem; }
+      .header .ts { font-size: 1rem; }
+      .row {
+        flex-direction: column;
+        gap: 16px;
+        margin-top: 16px;
+      }
+      .card {
+        min-width: 0;
+        padding: 12px;
+        border-radius: 12px;
+      }
+      .card h3 { margin: 0 0 10px 0; font-size: 0.9rem; }
+      .card img { border-radius: 6px; }
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 10px; }
+      .header h1 { font-size: 1.1rem; }
+      .header .ts { font-size: 0.95rem; }
+      .card { padding: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Poslední změna na tabuli</h1>
+    {% if ev %}
+    <p class="ts">{{ ev.ts|format_ts }}</p>
+    <p class="back"><a href="/">← Zpět na přehled</a></p>
+    {% else %}
+    <p class="empty">Žádná změna k zobrazení.</p>
+    <p class="back"><a href="/">← Zpět na přehled</a></p>
+    {% endif %}
+    {% if sms_info and (sms_info.time_range or sms_info.daily_limit_per_number) %}
+    <p class="info" style="margin-top: 12px; font-size: 0.9rem; color: var(--muted);">
+      SMS notifikace:
+      {% if sms_info.time_range %}{{ sms_info.time_range }}{% endif %}
+      {% if sms_info.time_range and sms_info.daily_limit_per_number %} · {% endif %}
+      {% if sms_info.daily_limit_per_number %}limit {{ sms_info.daily_limit_per_number }} SMS/číslo/den{% endif %}
+    </p>
+    {% endif %}
+    {% if illumination %}
+    <p class="info" style="margin-top: 6px; font-size: 0.9rem; color: var(--muted);">
+      Odesílání závisí na osvětlení: aktuální jas {% if illumination.brightness is not none %}{{ illumination.brightness }}{% else %}—{% endif %}{% if illumination.min_brightness is not none %} / min. {{ illumination.min_brightness }}{% endif %}
+    </p>
+    {% endif %}
+  </div>
+
+  {% if ev %}
+  <div class="row">
+    <div class="card">
+      <h3>Před změnou</h3>
+      {% if ev.has_frame_before %}
+      <a href="/file/{{ ev.rel }}/frame_before.jpg"><img src="/file/{{ ev.rel }}/frame_before.jpg" alt="před změnou"></a>
+      {% elif ev_before %}
+      <a href="/file/{{ ev_before.rel }}/frame.jpg"><img src="/file/{{ ev_before.rel }}/frame.jpg" alt="před změnou"></a>
+      {% else %}
+      <p class="empty">Před změnou není k dispozici</p>
+      {% endif %}
+      {% if ev_before %}
+      <div class="ts">{{ ev_before.ts|format_ts }}</div>
+      {% endif %}
+    </div>
+    <div class="card">
+      <h3>Po změně</h3>
+      <a href="/file/{{ ev.rel }}/frame.jpg"><img src="/file/{{ ev.rel }}/frame.jpg" alt="po změně"></a>
+      <div class="ts">{{ ev.ts|format_ts }}</div>
+    </div>
+  </div>
+  {% endif %}
+</body>
+</html>

@@ -1,0 +1,16 @@
+[Unit]
+Description=Whiteboard Agent (RPi3) - capture/diff/OCR -> HUB
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=hanz
+Environment=WHITEBOARD_AGENT_CONFIG=/etc/whiteboard-agent/config.yaml
+WorkingDirectory=/opt/whiteboard-agent
+ExecStart=/opt/whiteboard-agent/venv/bin/python /opt/whiteboard-agent/main.py
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

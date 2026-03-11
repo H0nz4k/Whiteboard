@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <title>Nastavení — Whiteboard</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-elevated: #334155;
+      --border: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #7dd3fc;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 20px; background: var(--bg); color: var(--text); }
+    .header { margin-bottom: 24px; }
+    .header h1 { margin: 0 0 8px 0; font-size: 1.5rem; }
+    .header a { color: var(--accent); text-decoration: none; font-size: 0.95rem; }
+    .header a:hover { text-decoration: underline; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 20px;
+      max-width: 600px;
+    }
+    .card h2 { font-size: 1.1rem; color: var(--accent); margin: 0 0 16px 0; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+    .row { margin-bottom: 14px; }
+    .row label { display: block; font-size: 0.9rem; margin-bottom: 4px; color: var(--muted); }
+    .checkbox-lg { width: 20px; height: 20px; cursor: pointer; }
+    .row input, .row select, .row textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+    .row textarea { min-height: 80px; resize: vertical; }
+    .row-inline { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .row-inline input { flex: 1; min-width: 100px; }
+    .hint { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+    .btn {
+      padding: 10px 18px;
+      background: var(--accent);
+      color: #0f172a;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .btn-secondary { background: var(--surface-elevated); color: var(--text); }
+    .btn-secondary:hover { background: var(--border); }
+    .msg { padding: 10px; border-radius: 8px; margin-top: 12px; font-size: 0.9rem; }
+    .msg.ok { background: #0d3d0d; color: #34d399; }
+    .msg.err { background: #4d1a1a; color: #fca5a5; }
+    .counter-display { font-size: 1.2rem; font-weight: 600; color: var(--accent); }
+    .version { color: var(--muted); font-weight: 400; font-size: 0.85rem; }
+    @media (min-width: 769px) { body { max-width: 700px; margin: 0 auto; } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Nastavení <span class="version">v{{ version }}</span></h1>
+    <a href="/">← Zpět na přehled</a>
+  </div>
+
+  <div class="card">
+    <h2>SMS notifikace</h2>
+    <form id="sms-form">
+      <div class="row">
+        <label><input type="checkbox" id="sms_enabled" checked class="checkbox-lg"> Odesílání SMS povoleno</label>
+        <div class="hint">Zapnout/vypnout odesílání SMS při změně na tabuli.</div>
+      </div>
+      <div class="row">
+        <label>URL hubu (pro odkaz v SMS)</label>
+        <input type="text" id="sms_base_url" placeholder="https://vase-domena.cz">
+        <div class="hint">Veřejná adresa hubu – {url} v textu zprávy se nahradí odkazem.</div>
+      </div>
+      <div class="row">
+        <label>Telefonní čísla (jedno na řádek)</label>
+        <textarea id="sms_numbers" placeholder="+420731164187&#10;+420123456789"></textarea>
+        <div class="hint">Formát: +420XXXXXXXXX. Na tato čísla se odešle zpráva při eventu.</div>
+      </div>
+      <div class="row">
+        <label>Text zprávy</label>
+        <textarea id="sms_message" placeholder="Změna na tabuli {datetime}: {url}"></textarea>
+        <div class="hint">{url} = odkaz na detail. {datetime} = datum a čas změny (dd.mm.rrrr hh:mm).</div>
+      </div>
+      <div class="row row-inline">
+        <div style="flex:1;">
+          <label>Odesílat od (HH:MM)</label>
+          <input type="text" id="sms_time_from" placeholder="00:00" pattern="[0-9]{1,2}:[0-9]{2}">
+        </div>
+        <div style="flex:1;">
+          <label>Odesílat do (HH:MM)</label>
+          <input type="text" id="sms_time_to" placeholder="23:59" pattern="[0-9]{1,2}:[0-9]{2}">
+        </div>
+      </div>
+      <div class="hint" style="margin-bottom:14px;">Prázdné = bez omezení. Např. 08:00–22:00 = jen přes den.</div>
+      <div class="row">
+        <label>Omezení zpráv za den</label>
+        <input type="number" id="sms_daily_limit" min="0" placeholder="0 = neomezeno">
+        <div class="hint">Max. počet SMS na číslo za den. 0 = bez omezení. Při 2 číslech a limitu 4 = 8 SMS celkem.</div>
+      </div>
+      <div class="row">
+        <label>Kdy odeslat</label>
+        <select id="sms_trigger">
+          <option value="change">Při každé změně na tabuli</option>
+          <option value="first_today">Jen první změna za den</option>
+        </select>
+      </div>
+      <div class="row">
+        <span class="counter-display">Odesláno SMS: <span id="sms_counter">0</span></span>
+        <button type="button" class="btn btn-secondary" id="sms_reset" style="margin-left:12px;">Resetovat počítadlo</button>
+      </div>
+      <button type="submit" class="btn">Uložit SMS nastavení</button>
+      <button type="button" class="btn btn-secondary" id="sms_test" style="margin-left:12px;">Odeslat test</button>
+      <div id="sms_msg" class="msg" style="display:none;"></div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Mail</h2>
+    <p class="hint">Nastavení e-mailových notifikací – bude doplněno.</p>
+  </div>
+
+  <script>
+    async function load() {
+      const r = await fetch("/api/settings");
+      const d = await r.json();
+      document.getElementById("sms_enabled").checked = d.sms?.enabled !== false;
+      document.getElementById("sms_base_url").value = d.sms?.base_url || "";
+      document.getElementById("sms_numbers").value = (d.sms?.numbers || []).join("\n");
+      document.getElementById("sms_message").value = d.sms?.message || "Změna na tabuli {datetime}: {url}";
+      document.getElementById("sms_time_from").value = d.sms?.time_from || "";
+      document.getElementById("sms_time_to").value = d.sms?.time_to || "";
+      document.getElementById("sms_daily_limit").value = d.sms?.daily_limit || "";
+      document.getElementById("sms_trigger").value = d.sms?.trigger || "change";
+      document.getElementById("sms_counter").textContent = d.sms?.counter ?? 0;
+    }
+    document.getElementById("sms-form").onsubmit = async (e) => {
+      e.preventDefault();
+      const numbers = document.getElementById("sms_numbers").value.split("\n").map(s => s.trim()).filter(Boolean);
+      const body = {
+        sms: {
+          enabled: document.getElementById("sms_enabled").checked,
+          base_url: document.getElementById("sms_base_url").value.trim() || "",
+          numbers,
+          message: document.getElementById("sms_message").value || "Změna na tabuli {datetime}: {url}",
+          time_from: document.getElementById("sms_time_from").value.trim() || null,
+          time_to: document.getElementById("sms_time_to").value.trim() || null,
+          daily_limit: parseInt(document.getElementById("sms_daily_limit").value) || 0,
+          trigger: document.getElementById("sms_trigger").value,
+        }
+      };
+      const r = await fetch("/api/settings", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body) });
+      const msg = document.getElementById("sms_msg");
+      msg.style.display = "block";
+      if (r.ok) {
+        msg.className = "msg ok";
+        msg.textContent = "Uloženo.";
+      } else {
+        msg.className = "msg err";
+        msg.textContent = "Chyba: " + ((await r.json()).error || r.status);
+      }
+    };
+    document.getElementById("sms_test").onclick = async () => {
+      const msg = document.getElementById("sms_msg");
+      msg.style.display = "block";
+      const r = await fetch("/api/settings/sms/test", { method: "POST" });
+      const d = await r.json();
+      if (r.ok && d.ok) {
+        msg.className = "msg ok";
+        msg.textContent = "Testovací SMS odeslána.";
+      } else {
+        msg.className = "msg err";
+        msg.textContent = "Chyba: " + (d.error || d.message || r.status);
+      }
+    };
+    document.getElementById("sms_reset").onclick = async () => {
+      if (!confirm("Opravdu resetovat počítadlo odeslaných SMS?")) return;
+      const r = await fetch("/api/settings/sms/reset", { method: "POST" });
+      if (r.ok) {
+        document.getElementById("sms_counter").textContent = "0";
+        document.getElementById("sms_msg").style.display = "block";
+        document.getElementById("sms_msg").className = "msg ok";
+        document.getElementById("sms_msg").textContent = "Počítadlo resetováno.";
+      }
+    };
+    load();
+  </script>
+</body>
+</html>

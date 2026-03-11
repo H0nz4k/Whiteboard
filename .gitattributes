@@ -1,0 +1,2 @@
+# Shell skripty – vždy LF (kvůli shebang na Linuxu)
+*.sh text eol=lf

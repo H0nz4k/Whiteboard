@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="icon" type="image/png" sizes="64x64" href="/static/favicon.png">
+  <link rel="apple-touch-icon" href="/static/favicon.png">
+  <title>Whiteboard Live — HanzHub</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --border: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #7dd3fc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .nav { margin-bottom: 24px; }
+    .nav a {
+      color: var(--accent);
+      text-decoration: none;
+      margin-right: 16px;
+    }
+    .nav a:hover { color: var(--accent-hover); }
+    h1 { font-size: 1.5rem; font-weight: 600; margin: 0 0 8px 0; display: flex; align-items: center; gap: 12px; }
+    .header-logo { width: 36px; height: 36px; flex-shrink: 0; }
+    .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 20px; }
+    .row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      flex: 1;
+      min-width: 280px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+    }
+    .card h3 { margin: 0 0 12px 0; font-size: 1rem; }
+    .card img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      display: block;
+    }
+    .meta { color: var(--muted); font-size: 12px; margin-top: 8px; }
+    .ocr-box {
+      margin-top: 20px;
+      padding: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-family: ui-monospace, monospace;
+      white-space: pre-wrap;
+      font-size: 0.95rem;
+      min-height: 60px;
+    }
+    .ocr-box.empty { color: var(--muted); }
+    .version { color: var(--muted); font-weight: 400; font-size: 0.85rem; }
+    .diff-details { margin-top: 16px; }
+    .diff-details summary { cursor: pointer; color: var(--muted); font-size: 0.9rem; }
+    .diff-details img { max-width: 100%; border-radius: 8px; border: 1px solid var(--border); margin-top: 8px; }
+
+    @media (max-width: 768px) {
+      body { padding: 12px; }
+      h1 { font-size: 1.25rem; }
+      .nav { margin-bottom: 16px; }
+      .nav a { display: inline-block; padding: 8px 0; }
+      .row { flex-direction: column; gap: 12px; }
+      .card { min-width: 100%; padding: 12px; }
+      .ocr-box { padding: 12px; font-size: 0.9rem; min-height: 48px; }
+    }
+
+    @media (min-width: 769px) {
+      body { max-width: 1200px; margin: 0 auto; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a href="/">← Zpět na eventy</a>
+    {% if rpi_url %}<a href="{{ rpi_url }}/" target="_blank" rel="noopener">Nastavení + analýza na RPi →</a>{% endif %}
+  </nav>
+  <h1><img src="/static/logo.svg" alt="" class="header-logo"> Whiteboard Live (RPi3) <span class="version">v{{ version }}</span></h1>
+  <p class="sub">Živý náhled z kamery – aktuální stav tabule</p>
+
+  <div class="row">
+    <div class="card">
+      <h3>Aktuální stav</h3>
+      <img id="frame" alt="live frame" src="">
+      <div class="meta" id="meta1">načítám…</div>
+    </div>
+    <details class="card diff-details">
+      <summary>Diff – náhled detekce změny</summary>
+      <img id="diff" alt="diff" src="">
+    </details>
+  </div>
+
+  <h3 style="margin-top: 24px;">Přečtený text (OCR)</h3>
+  <div id="ocr" class="ocr-box empty">načítám…</div>
+
+  <script>
+    document.getElementById("frame").src = "/api/live/stream";
+    const diffUrl = "/api/live/diff";
+    const intervalMs = 1500;
+
+    setInterval(() => {
+      document.getElementById("diff").src = diffUrl + "?t=" + Date.now();
+      document.getElementById("meta1").textContent = "Živý přenos – " + new Date().toLocaleTimeString("cs-CZ");
+    }, intervalMs);
+    setInterval(() => {
+      fetch("/api/live/ocr").then(r=>r.json()).then(d=>{
+        const el = document.getElementById("ocr");
+        el.textContent = d.text || (d.error ? "Chyba: " + d.error : "—");
+        el.classList.toggle("empty", !d.text);
+      }).catch(()=>{ document.getElementById("ocr").textContent = "Chyba načtení"; });
+    }, 2000);
+    document.getElementById("meta1").textContent = "Živý přenos – načítám…";
+    fetch("/api/live/ocr").then(r=>r.json()).then(d=>{
+      const el = document.getElementById("ocr");
+      el.textContent = d.text || (d.error ? "Chyba: " + d.error : "—");
+      el.classList.toggle("empty", !d.text);
+    }).catch(()=>{ document.getElementById("ocr").textContent = "Chyba načtení"; });
+  </script>
+</body>
+</html>

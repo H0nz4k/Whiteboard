@@ -1,0 +1,16 @@
+[Unit]
+Description=Whiteboard HUB server - ingest + UI
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=hanz
+Environment=WHITEBOARD_HUB_CONFIG=/opt/whiteboard-hub/config.yaml
+WorkingDirectory=/opt/whiteboard-hub
+ExecStart=/opt/whiteboard-hub/venv/bin/python /opt/whiteboard-hub/app.py
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

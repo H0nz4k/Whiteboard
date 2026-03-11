@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Whiteboard Live</title>
+  <style>
+    body{font-family:system-ui,Arial,sans-serif;margin:16px;}
+    .row{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;}
+    .card{border:1px solid #ddd;border-radius:10px;padding:12px;}
+    img{max-width:720px;height:auto;border-radius:8px;border:1px solid #444;}
+    .small{color:#666;font-size:12px;margin-top:6px;}
+  </style>
+</head>
+<body>
+  <h2>Whiteboard Live (RPi3)</h2>
+
+  <div class="row">
+    <div class="card">
+      <h3>Live frame</h3>
+      <img id="frame" alt="frame">
+      <div class="small" id="meta1"></div>
+    </div>
+
+    <div class="card">
+      <h3>Diff</h3>
+      <img id="diff" alt="diff">
+      <div class="small" id="meta2"></div>
+    </div>
+  </div>
+
+  <script>
+    const frameUrl = "/api/live/frame";
+    const diffUrl  = "/api/live/diff";
+    const fps = 1.2; // cca 1.2 snímku/s (uprav dle chuti)
+    const intervalMs = Math.round(1000 / fps);
+
+    function refresh() {
+      const t = Date.now();
+      document.getElementById("frame").src = frameUrl + "?t=" + t;
+      document.getElementById("diff").src  = diffUrl  + "?t=" + t;
+      document.getElementById("meta1").textContent = `refresh: ${new Date().toLocaleTimeString()}  (${intervalMs} ms)`;
+      document.getElementById("meta2").textContent = `source: ${RPI}`;
+    }
+
+    setInterval(refresh, intervalMs);
+    refresh();
+  </script>
+</body>
+</html>

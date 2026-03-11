@@ -1,0 +1,27 @@
+server:
+  host: "0.0.0.0"
+  port: 8099
+
+auth:
+  token: "CHANGE_ME_LONG_RANDOM_TOKEN"
+
+storage:
+  base_dir: "/opt/whiteboard-hub/data"
+  keep_days: 30   # mazat eventy starší než N dní
+
+# URL vestavěného HTTP serveru agenta – hub z něj stahuje frame/diff/ocr
+live:
+  rpi_url: "http://192.168.1.19:8081"
+
+# SMS notifikace při změně na tabuli – nastavení v UI /settings
+sms:
+  enabled: true
+  base_url: "https://vase-domena.cz"   # veřejná URL hubu (pro odkaz v SMS)
+  message: "Změna na tabuli {datetime}: {url}"   # {url}=odkaz, {datetime}=dd.mm.rrrr hh:mm
+  numbers:
+    - "+420"
+  time_from: null   # HH:MM – od kdy odesílat (prázdné = bez omezení)
+  time_to: null     # HH:MM – do kdy odesílat
+  daily_limit: 0    # max SMS na číslo za den (0 = neomezeno). Při 2 číslech a 4 = 8 SMS celkem.
+  trigger: change   # change | first_today
+  send_script: "/opt/sms/send.sh"   # nebo /opt/sms_mail/send.sh

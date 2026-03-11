@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="icon" type="image/png" sizes="64x64" href="/static/favicon.png">
+  <link rel="apple-touch-icon" href="/static/favicon.png">
+  <title>Whiteboard Monitor — HanzHub</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-elevated: #334155;
+      --border: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #7dd3fc;
+      --alert: #fbbf24;
+      --success: #34d399;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 20px; background: var(--bg); color: var(--text); }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .header h1 { margin: 0; font-size: 1.5rem; display: flex; align-items: center; gap: 12px; }
+    .header-logo { width: 40px; height: 40px; flex-shrink: 0; }
+    .header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .btn-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      background: var(--accent);
+      color: #0f172a;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .btn-live:hover { background: var(--accent-hover); color: #0f172a; }
+    .sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 20px; }
+    .section-title { font-size: 1.1rem; color: var(--accent); margin: 28px 0 14px 0; font-weight: 600; }
+    .row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      flex: 1;
+      min-width: 260px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+    }
+    .card h3 { margin: 0 0 12px 0; font-size: 1rem; }
+    .card img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      display: block;
+    }
+    .meta { color: var(--muted); font-size: 0.8rem; margin-top: 8px; }
+    .meta-green { color: var(--success); font-size: 0.9rem; font-weight: 500; }
+    .ocr-mini { margin-top: 10px; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; font-family: ui-monospace, monospace; font-size: 0.85rem; white-space: pre-wrap; }
+    .ocr-mini.empty { color: var(--muted); }
+    .ocr-box {
+      margin-top: 16px;
+      padding: 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: ui-monospace, monospace;
+      white-space: pre-wrap;
+      font-size: 0.9rem;
+      min-height: 50px;
+    }
+    .ocr-box.empty { color: var(--muted); }
+    .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+    .history-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    .history-card .card-header {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .history-card .ts { color: var(--muted); font-size: 0.85rem; }
+    .history-card .change { font-size: 0.8rem; color: var(--muted); }
+    .history-card .imgs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .history-card .imgs img { max-width: 100%; border-radius: 6px; border: 1px solid var(--border); }
+    .history-card .diff-details { margin-top: 8px; }
+    .history-card .diff-details summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; }
+    .history-card .diff-details[open] summary { margin-bottom: 6px; }
+    .diff-details { margin-top: 12px; }
+    .diff-details summary { cursor: pointer; color: var(--muted); font-size: 0.9rem; }
+    .diff-details img { max-width: 100%; border-radius: 6px; border: 1px solid var(--border); margin-top: 8px; }
+    .roleta { margin-top: 16px; }
+    .roleta summary { cursor: pointer; color: var(--muted); padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; font-size: 0.95rem; transition: background 0.2s; }
+    .roleta summary:hover { background: var(--surface-elevated); color: var(--text); }
+    .history-card .ocr { font-size: 0.8rem; margin-top: 8px; padding: 8px; background: var(--bg); border-radius: 6px; white-space: pre-wrap; overflow: hidden; text-overflow: ellipsis; max-height: 60px; }
+    .empty { color: var(--muted); padding: 40px; text-align: center; }
+    .badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--alert); color: #000; border-radius: 16px; font-size: 0.8rem; font-weight: 600; }
+    .version { color: var(--muted); font-weight: 400; font-size: 0.85rem; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.85; } }
+    .pulse { animation: pulse 2s ease-in-out infinite; }
+
+    @media (max-width: 768px) {
+      body { padding: 12px; }
+      .header { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .header h1 { font-size: 1.25rem; }
+      .btn-live { width: 100%; justify-content: center; padding: 12px 18px; font-size: 1rem; }
+      .row { flex-direction: column; gap: 12px; }
+      .card { min-width: 100%; padding: 12px; }
+      .section-title { font-size: 1rem; margin: 20px 0 10px 0; }
+      .history-grid { grid-template-columns: 1fr; gap: 12px; }
+      .history-card .imgs { grid-template-columns: 1fr 1fr; gap: 6px; }
+      .history-card .ocr { max-height: 80px; font-size: 0.75rem; }
+    }
+
+    @media (min-width: 769px) {
+      body { max-width: 1400px; margin: 0 auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1><img src="/static/logo.svg" alt="" class="header-logo"> Whiteboard Monitor <span class="version">v{{ version }}</span></h1>
+      <p class="sub">Tabule v kuchyni – poslední stav, historie změn</p>
+    </div>
+    <div class="header-actions">
+      <a href="/last_diff" class="btn-live">Poslední změna</a>
+      <a href="/last_event" class="btn-live">Poslední event</a>
+      <a href="/live" class="btn-live">▶ Live kamera</a>
+      <a href="{{ rpi_url }}/" class="btn-live" target="_blank" rel="noopener">RPi agent</a>
+      <a href="/settings" class="btn-live">Nastavení</a>
+    </div>
+  </div>
+
+  {% if events and events[0] %}
+  {% set newer = events[0] %}
+  {% set older = events[1] if events|length > 1 else none %}
+  <p class="meta-green">Poslední aktualizace: {{ newer.ts|format_ts }}</p>
+  {% endif %}
+
+  <h2 class="section-title">Aktuální stav</h2>
+  {% if events and events[0] %}
+  {% set newer = events[0] %}
+  {% set older = events[1] if events|length > 1 else none %}
+  <div class="row">
+    {% if older %}
+    <div class="card">
+      <h3>Předposlední last (původní)</h3>
+      <a href="/file/{{ older.rel }}/frame.jpg"><img src="/file/{{ older.rel }}/frame.jpg" alt="původní"></a>
+      <div class="meta meta-green">{{ older.ts|format_ts }} – před změnou</div>
+      <div class="ocr-mini {{ 'empty' if not older.ocr_text else '' }}">{{ older.ocr_text or '—' }}</div>
+    </div>
+    {% endif %}
+    <div class="card">
+      <h3>Poslední last (nový)</h3>
+      <a href="/file/{{ newer.rel }}/frame.jpg"><img src="/file/{{ newer.rel }}/frame.jpg" alt="nový"></a>
+      <div class="meta meta-green">{{ newer.ts|format_ts }} – po změně</div>
+      <div class="ocr-mini {{ 'empty' if not newer.ocr_text else '' }}">{{ newer.ocr_text or '—' }}</div>
+    </div>
+  </div>
+  <details class="diff-details roleta">
+    <summary>▸ Diff – náhled detekce změny</summary>
+    <a href="/file/{{ newer.rel }}/diff.png"><img src="/file/{{ newer.rel }}/diff.png" alt="diff"></a>
+  </details>
+  {% else %}
+  <p class="meta">Zatím žádné eventy. Živý náhled na stránce <a href="/live">Live kamera</a>.</p>
+  {% endif %}
+
+  <p class="meta" style="margin-top: 24px;"><a href="/last_event" style="color:var(--accent);">Poslední event</a> – posledních 30, starší než {{ keep_days }} dní se mažou.</p>
+
+  <script>
+    const CHECK_INTERVAL = 10000;  // kontrola nových eventů každých 10 s (reload jen při změně)
+    let lastCount = {{ events|length }};
+    function checkNew() {
+      fetch("/api/events/count").then(r => r.json()).then(d => {
+        if (d.count > lastCount) {
+          lastCount = d.count;
+          document.title = "● " + document.title.replace(/^●\s*/, "");
+          if (Notification.permission === "granted") new Notification("Nová změna na tabuli!", { body: "Byla detekována změna na whiteboardu." });
+          location.reload();
+        }
+      }).catch(() => {});
+    }
+    setInterval(checkNew, CHECK_INTERVAL);
+    if ("Notification" in window && Notification.permission === "default") Notification.requestPermission();
+  </script>
+</body>
+</html>

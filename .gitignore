@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+env/
+.env
+
+# IDE
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Configuration (Secrets)
+config.yaml
+# Keep config.example.yaml
+
+# Logs & Status
+*.log
+status.json
+status.json.tmp
+
+# Data & Storage
+data/
+queue/
+last/
+events/
+old_vyvoj_mix/
+agent_vyvoj/
+
+# Temporary / Generated Images
+*.jpg
+*.png
+!assets/
+
+# Generated Text
+last_ocr.txt
+last_ocr_input.png
+
+# Agent specific
+check_camera.py.output

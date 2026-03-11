@@ -1,0 +1,66 @@
+device_id: "whiteboard-rpi3-01"
+
+hub:
+  url: "http://192.168.1.3:8099/api/whiteboard/event"
+  token: "CHANGE_ME_LONG_RANDOM_TOKEN"
+
+capture:
+  backend: "picamera2"   # picamera2 | opencv
+  camera_index: 0
+  # RPi CSI: 1920x1080 funguje spolehlivě. 1640x1232 nebo 3280x2464 pro vyšší rozlišení.
+  width: 1920
+  height: 1080
+  rotate: 0
+  jpeg_quality: 90
+  # Úpravy obrazu (0–200, 100 = bez změny)
+  brightness: 100
+  contrast: 100
+
+processing:
+  interval_seconds: 3
+  roi: {x: 100, y: 50, w: 1720, h: 980}   # pro 1920x1080
+  min_brightness: 100   # 0–255, null = vypnuto. Při menším jasu se nic neposílá (last, diff, eventy)
+  change_threshold_percent: 0.35
+  illumination_invariant: true   # normalizace jasu před porovnáním – méně falešných detekcí při stmívání/rozednívání
+  max_brightness_change_percent: 35   # při větším rozdílu jasu před/po = jen osvětlení, event se neposílá
+  pixel_threshold: 30   # rozdíl pixelů > toto = změna (25–40, vyšší = méně citlivé na osvětlení)
+  consecutive_hits: 2
+  cooldown_seconds: 20
+  fast_change_threshold_percent: 1.5   # při změně >= 1.5 % přeskoč ustálení, odešli hned
+  stabilization_enabled: true   # čekat na ustálení před eventem (ignoruje průchod osob, psaní)
+  stabilization_frames: 3       # kolik stabilních snímků před odesláním
+  clahe_clip_limit: 2.0   # CLAHE kontrast (1–4)
+
+  perspective_enabled: false
+  perspective_corners:
+    - [200, 120]
+    - [1450, 120]
+    - [1450, 980]
+    - [200, 980]
+  perspective_output_size: [1400, 900]
+
+ocr:
+  enabled: true
+  lang: "ces"
+  psm: 6
+  oem: 1
+  preprocess: "otsu"   # otsu | adaptive | none (pro ruční písmo zkus none)
+  min_side: 300        # min. rozměr obrázku pro OCR (zvětšení při menším ROI)
+  # debug_save_input: true   # uloží last_ocr_input.png – obrázek posílaný do Tesseractu (pro kontrolu ROI)
+
+# Vše pod /opt/whiteboard-agent – přehledné
+storage:
+  base_dir: "/opt/whiteboard-agent/data"
+  keep_local_days: 7
+  queue_dir: "/opt/whiteboard-agent/data/queue"
+  last_dir: "/opt/whiteboard-agent/data/last"
+
+# Web UI pro nastavení + live data (last.jpg, last_diff.png, last_ocr.txt)
+# http://192.168.1.19:8081/ – úpravy kamery, OCR, detekce změn
+live_server:
+  enabled: true
+  port: 8081
+  bind: "0.0.0.0"
+
+logging:
+  status_file: "/opt/whiteboard-agent/data/status.json"

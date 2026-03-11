@@ -1,0 +1,12 @@
+[Unit]
+Description=libcamera-v4l2 – CSI kamera jako /dev/video0 pro OpenCV
+Before=whiteboard-agent.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/libcamera-v4l2 --camera 0
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

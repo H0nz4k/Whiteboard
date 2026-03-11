@@ -1,0 +1,57 @@
+device_id: whiteboard-rpi3-01
+hub:
+  url: http://192.168.1.3:8099/api/whiteboard/event
+  token: CHANGE_ME_LONG_RANDOM_TOKEN
+capture:
+  backend: picamera2
+  camera_index: 0
+  width: 1920
+  height: 1080
+  rotate: 0
+  jpeg_quality: 90
+  brightness: 100
+  contrast: 140
+processing:
+  interval_seconds: 3
+  roi:
+  min_brightness: 40
+    x: 550
+    y: 160
+    w: 1250
+    h: 600
+  change_threshold_percent: 0.35
+  consecutive_hits: 2
+  cooldown_seconds: 20
+  stabilization_enabled: true
+  stabilization_frames: 3
+  perspective_corners:
+  - - 200
+    - 120
+  - - 1450
+    - 120
+  - - 1450
+    - 980
+  - - 200
+    - 980
+  perspective_output_size:
+  - 1400
+  - 900
+ocr:
+  enabled: true
+  lang: ces
+  psm: 4
+  oem: 1
+  preprocess: otsu
+  min_side: 300
+  debug_save_input: true
+storage:
+  base_dir: /opt/whiteboard-agent/data
+  keep_local_days: 7
+  queue_dir: /opt/whiteboard-agent/data/queue
+  last_dir: /opt/whiteboard-agent/data/last
+live_server:
+  enabled: true
+  port: 8081
+  bind: 0.0.0.0
+logging:
+  status_file: /opt/whiteboard-agent/data/status.json
